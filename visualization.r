@@ -13,19 +13,19 @@ print(sum(duplicated(bank)))
 # Data Cleaning
 bank_clean <- bank %>%
   select(-starts_with("Naive_Bayes")) %>%      # remove 2 model-output columns
-  #mutate(Education_Level = na_if(Education_Level, "Unknown"),
+  mutate(Gender = na_if(Gender, "Unknown")) %>% 
          #Marital_Status  = na_if(Marital_Status,  "Unknown"),
          #Income_Category = na_if(Income_Category, "Unknown")) %>%   # "Unknown" = missing
   distinct() %>%                               # remove duplicate rows
-  filter(!is.na(Dependent_count),
+  filter(!is.na(Gender),
          !is.na(Credit_Limit),
          Credit_Limit >= 0,
-         Dependent_count >= 0)                 # keep only valid values in our columns
+         Gender >= 0)                 # keep only valid values in our columns
 
 print(dim(bank_clean))         # rows and columns after cleaning
 write_csv(bank_clean, "BankChurners_clean.csv")
 
-dependants   <- bank_clean$Dependent_count
+gender   <- bank_clean$Gender
 credit_limit <- bank_clean$Credit_Limit
 
 stats <- data.frame(
@@ -59,8 +59,8 @@ histogram <- ggplot(bank_clean, aes(x = Credit_Limit)) +
   stat_function(fun = normal_curve, aes(colour = "Normal curve"),
                 linewidth = 1) +
   expand_limits(x = 40000, y = 2500) +
-  labs(title  = "Histogram of Borrowing limit with normal curve",
-       x      = "Borrowing Limit (US$)",
+  labs(title  = "Histogram of credit limit with normal curve",
+       x      = "Credit Limit (US$)",
        y      = "Number of customers",
        colour = NULL) +
   geom_vline(data = stats,
@@ -71,12 +71,12 @@ histogram <- ggplot(bank_clean, aes(x = Credit_Limit)) +
 
 print(histogram)
 
-ggplot(bank_clean, aes(x = factor(Dependent_count), y = Credit_Limit)) +
+ggplot(bank_clean, aes(x = factor(gender), y = credit_limit)) +
   geom_boxplot(fill = "steelblue", alpha = 0.7) +
   stat_summary(fun = mean, geom = "point", 
                shape = 3, size = 3.5, color = "red") +
-  labs(title = "Comparison of Borrowing Limit by Number of Financial Dependents",
+  labs(title = "Comparison of Credit Limit between Males and Females",
        subtitle = "Horizontal line = Median | Red plus = Mean",
-       x = "Number of Financial Dependents",
-       y = "Borrowing Limit (US$)") +
+       x = "Gender",
+       y = "Credit Limit (US$)") +
   theme_minimal()
